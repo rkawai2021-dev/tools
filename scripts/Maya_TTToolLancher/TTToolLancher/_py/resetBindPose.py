@@ -1,25 +1,42 @@
 from maya import cmds
+from maya.api import OpenMaya as om
+from maya.api import OpenMayaAnim as oma
 
 
 def resetBindPose():
     poses = cmds.ls(type="dagPose")
-    cmds.delete(poses)
+    if poses:
+        cmds.delete(poses)
 
     jnts = cmds.ls(type="joint")
 
     bpose = cmds.dagPose(jnts, bindPose=True, save=True)
+
     clusters = getSkinCulsters(jnts)
-    if clusters:
-        for cluster in clusters:
-            cmds.connectAttr(f"{bpose}.message", f"{cluster}.bindPose", f=True)
+    if not clusters:
+        return
 
+    for cluster in clusters:
+        sel = om.MSelectionList()
+        sel.add(cluster)
+        obj = sel.getDependNode(0)
 
-def new_resetBindPose():
-    jnts = cmds.ls(type="joint")
+        skin_fn = oma.MFnSkinCluster(obj)
 
-    dagPoses = cmds.ls(type="dagPose")
-    for dagPose in dagPoses:
-        cmds.listConnections()
+        infs:list[om.MDagPath] = skin_fn.influenceObjects()
+
+        for i in range(infs.length()):
+            dag = infs[i]
+
+            index = skin_fn.indexForInfluenceObject(dag)
+
+            world_matrix = dag.inclusiveMatrix()
+            bind_pre = world_matrix.inverse()
+
+            plug = skin_fn.findPlug("bindPreMatrix", False).elementByLogicalIndex(index)
+            plug.setMObject(om.MFnMatrixData().create(bind_pre))
+
+        cmds.connectAttr(f"{bpose}.message", f"{cluster}.bindPose", f=True)
 
 
 def deleteDagPose():
@@ -40,8 +57,6 @@ def getSkinCulsters(joints):
 
         if not jnts:
             continue
-        print(jnts)
-        print(joints)
         if not set(jnts).isdisjoint(joints):
             clusterList.append(c)
 
