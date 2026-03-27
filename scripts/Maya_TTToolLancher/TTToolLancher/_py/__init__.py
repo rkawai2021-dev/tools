@@ -151,7 +151,16 @@ def getModuleDict():
             "document": None,
             "tutorial": None,
         },
-
+        {
+            "index": 11,
+            "name": "Orient To Rotate",
+            "label": "Convert Orient to Rotate",
+            "cmd": Activate_transferOToR,
+            "icn": "",
+            "annotation": "",
+            "document": None,
+            "tutorial": None,
+        },
 
     ]
     return moduleDict
@@ -243,6 +252,7 @@ def Activate_colorFromOutliner(*args, **kwargs):
     reload(cfo)
     cfo.color_from_outlinerColor()
 
+
 @getErrorDeco
 def Activate_hideLocalAxis(*args, **kwargs):
     from . import hideLocalAxis as hla
@@ -250,9 +260,18 @@ def Activate_hideLocalAxis(*args, **kwargs):
     reload(hla)
     hla.hideLocalAxis()
 
+
 @getErrorDeco
 def Activate_deleteConst(*args, **kwargs):
     from . import deleteConstraint as dc
 
     reload(dc)
     dc.deleteCoonstraint()
+
+
+@getErrorDeco
+def Activate_transferOToR(*args, **kwargs):
+    from . import transferOrientToRotate as tor
+
+    reload(tor)
+    tor.transferOrientToRotate()
